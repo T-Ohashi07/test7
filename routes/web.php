@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\ProductController;
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,3 +21,6 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+//一覧表示用
+Route::get('/productlist', 'ProductController@showList')->name('productlist');
