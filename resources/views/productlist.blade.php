@@ -10,65 +10,25 @@
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;600&display=swap" rel="stylesheet">
 
         <!-- Styles -->
-        <style>
-            html, body {
-                background-color: #fff;
-                color: #636b6f;
-                font-family: 'Nunito', sans-serif;
-                font-weight: 200;
-                height: 100vh;
-                margin: 0;
-            }
+        <link rel="stylesheet" href="css/origin.css">
 
-            .full-height {
-                height: 100vh;
-            }
-
-            .flex-center {
-                align-items: center;
-                display: flex;
-                justify-content: center;
-            }
-
-            .position-ref {
-                position: relative;
-            }
-
-            .top-right {
-                position: absolute;
-                right: 10px;
-                top: 18px;
-            }
-
-            .content {
-                text-align: center;
-            }
-
-            .title {
-                font-size: 84px;
-            }
-
-            .links > a {
-                color: #636b6f;
-                padding: 0 25px;
-                font-size: 13px;
-                font-weight: 600;
-                letter-spacing: .1rem;
-                text-decoration: none;
-                text-transform: uppercase;
-            }
-
-            .m-b-md {
-                margin-bottom: 30px;
-            }
-        </style>
+        <script>
+            function delete_alert(e){
+            if(!window.confirm('本当に削除しますか？')){
+                window.alert('キャンセルされました'); 
+                return false;
+                }
+                document.deleteform.submit();
+            };
+        </script>
     </head>
     <body>
         <div class="flex-center position-ref full-height">
             @if (Route::has('login'))
                 <div class="top-right links">
                     @auth
-                        <a href="{{ url('/home') }}">Home</a>
+                        <p> {{ Auth::user()->name }}</p>
+                        <a href="{{ url('/home') }}">ログアウト用仮ボタン（元HOME）</a>
                     @else
                         <a href="{{ route('login') }}">Login</a>
 
@@ -81,10 +41,27 @@
 
             <div class="content">
                 <div class="title m-b-md">
-                    一覧表示用
+                    商品一覧
                 </div>
 
                 <div class="links">
+                <a href="{{ route('regist') }}">商品新規登録</a>
+                    <div>
+                    <form action="{{ route('searchlist') }}" method="GET">
+                    <input type="text" name="keyword" value="{{ $keyword }}">
+                    <label for="company_id">メーカー名</label>
+                            <select name="company_id" id="company_id">
+                            @foreach($companies as $company)
+                            <option value="{{ $company->id }}">{{ $company->company_name }}</option>
+                            @endforeach
+                            </select>
+                            @if($errors->has('company_id'))
+                            <p>{{ $errors->first('company_id') }}</p>
+                            @endif
+                    <input type="submit" value="検索">
+                    
+                    </form>
+                    </div>
                 <table>
                     <thead>
                     <tr>
@@ -94,6 +71,7 @@
 		                <th>PRICE</th>
 		                <th>STOCK</th>
 		                <th>COMMENT</th>
+                        <th>IMAGE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -105,6 +83,14 @@
 		                <td>{{ $product->price }}</td>
 		                <td>{{ $product->stock }}</td>
 		                <td>{{ $product->comment }}</td>
+                        <td><img src="{{ asset('storage/image/'.$product->img_path) }}" width="80" height="80"></td>
+                        <td><a href="{{ route('detail', ['id'=>$product->id]) }}" class="btn btn-primary">詳細</a></td>
+                        <td>
+                            <form action="{{ route('destroy', ['id'=>$product->id]) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-danger" onClick="delete_alert(event);return false;">削除</button>
+                            </form>
+                         </td>
                     </tr>
                     @endforeach
                 </tbody>
