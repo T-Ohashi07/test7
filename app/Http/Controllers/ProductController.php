@@ -18,17 +18,6 @@ class ProductController extends Controller
         $this->middleware('auth');
     }
 
-    public function showList() //未使用
-    {
-        // インスタンス生成
-        $model = new Product();
-        $products = $model->getList();
-        $model = new Company();
-        $companies = $model->getList();
-
-        return view('productlist',compact('products','companies') );
-    }
-
     public function searchList(Request $request)
     {
         $model = new Company();
@@ -38,14 +27,8 @@ class ProductController extends Controller
         $keyword = $request->input('keyword');
         $company_id = $request->input('company_id');
 
-        $query = Product::query();
-
-        if(!empty($keyword)) {
-            $query->where('product_name', 'LIKE', "%{$keyword}%")
-            ->where('company_id', '=', "{$company_id}");
-        }
-
-        $products = $query->get();
+        $model = new Product();
+        $products = $model->searchList($keyword, $company_id);
 
         return view('productlist', compact('products', 'keyword','companies'));
     }
@@ -96,37 +79,14 @@ class ProductController extends Controller
         return view('edit', compact('product', 'companies'));
     }
 
-        // 商品情報の編集画面からの更新処理を行う
+    // 商品情報の編集画面からの更新処理を行う
     public function update(ProductRequest $request, $id)
     {
         $product = Product::findOrFail($id);
 
-        $product->company_id = $request->input('company_id');
-        $product->product_name = $request->input('product_name');
-        $product->price = $request->input('price');
-        $product->stock = $request->input('stock');
-        $product->comment = $request->input('comment');
+        $product->updateProduct($request);
 
-        // 画像ファイルがアップロードされている場合
-        if ($request->hasFile('img_path')) {
-            $file = $request->file('img_path');
-                    
-            // 画像ファイルを保存するフォルダーのパスを指定する
-            $path = storage_path('app/public/image/');
-        
-            // 画像ファイルのファイル名を生成する
-            $filename = $file->getClientOriginalName();
-        
-            // 画像ファイルを指定のフォルダーに保存する
-            $file->move($path, $filename);
-        
-            // ファイル名をDBに保存する
-            $product->img_path = $filename;
-        }
-
-        $product->save();
-
-        return redirect()->route('detail', $id)->with('success', '商品情報を更新しました。');
+        return redirect()->route('detail', $id)->with('success', config('messages.success_update'));
     }
 
 }
