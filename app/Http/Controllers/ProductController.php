@@ -62,10 +62,19 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        // productsテーブルから指定のIDのレコード1件を取得
-        $product = Product::find($id);
-        // レコードを削除
-        $product->delete();
+        // トランザクション開始
+        DB::beginTransaction();
+
+        try {
+            // productsテーブルから指定のIDのレコード1件を取得
+            $product = Product::find($id);
+            // レコードを削除
+            $product->delete();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back();
+        }
         // 削除したら一覧画面にリダイレクト
         return redirect(route('searchlist'));
     }
@@ -82,9 +91,17 @@ class ProductController extends Controller
     // 商品情報の編集画面からの更新処理を行う
     public function update(ProductRequest $request, $id)
     {
-        $product = Product::findOrFail($id);
-
-        $product->updateProduct($request);
+        // トランザクション開始
+        DB::beginTransaction();
+        
+        try {
+            $product = Product::findOrFail($id);
+            $product->updateProduct($request);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back();
+        }
 
         return redirect()->route('detail', $id)->with('success', config('messages.success_update'));
     }
