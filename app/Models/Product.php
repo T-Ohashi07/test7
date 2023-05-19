@@ -77,7 +77,7 @@ class Product extends Model
         $this->save();
     }
 
-    public function searchList($keyword, $company_id)
+    public function search($keyword, $company_id,$price_min,$price_max,$stock_min,$stock_max,$sort_key, $sort_order)
     {
         $query = Product::query();
 
@@ -86,8 +86,29 @@ class Product extends Model
                   ->where('company_id', '=', "{$company_id}");
         }
 
-        $products = $query->get();
+        
+        if (!empty($price_min)) {
+            $query->where('price', '>=', $price_min);
+        }
 
+        if (!empty($price_max)) {
+            $query->where('price', '<=', $price_max);
+        }
+
+        if (!empty($stock_min)) {
+            $query->where('stock', '>=', $stock_min);
+        }
+
+        if (!empty($stock_max)) {
+            $query->where('stock', '<=', $stock_max);
+        }
+
+        if (!empty($sort_key)) {
+            $sort_order = !empty($sort_order) && $sort_order == 'asc' ? 'asc' : 'desc';
+            $query->orderBy($sort_key, $sort_order);
+        }
+        
+        $products = $query->get();
         return $products;
     }
 

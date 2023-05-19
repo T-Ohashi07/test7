@@ -26,12 +26,26 @@ class ProductController extends Controller
         //検索処理
         $keyword = $request->input('keyword');
         $company_id = $request->input('company_id');
+        $price_min = $request->input('price_min');
+        $price_max = $request->input('price_max');
+        $stock_min = $request->input('stock_min');
+        $stock_max = $request->input('stock_max');
+        $sort_key = $request->input('sort_key'); 
+        $sort_order = $request->input('sort_order');
 
         $model = new Product();
-        $products = $model->searchList($keyword, $company_id);
-
-        return view('productlist', compact('products', 'keyword','companies'));
+        $products = $model->search($keyword, $company_id,$price_min,$price_max,$stock_min,$stock_max,$sort_key, $sort_order);
+        
+        if($request->ajax()) {
+            return response()->json([
+                'view' => view('tbody')->with(compact('products'))->render()
+            ])->header('Content-Type', 'application/json; charset=utf-8');
+        } else {
+            return view('productlist', compact('products', 'keyword','companies'));
+        }
     }
+
+    
 
     public function registSubmit(ProductRequest $request) 
     {
@@ -60,23 +74,27 @@ class ProductController extends Controller
         return view('detail', compact('detail'));
     }
 
-    public function destroy($id)
+    public function destroy(Request $request,$id)
     {
-        // トランザクション開始
-        DB::beginTransaction();
-
-        try {
-            // productsテーブルから指定のIDのレコード1件を取得
-            $product = Product::find($id);
-            // レコードを削除
-            $product->delete();
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollback();
+        if ($request->ajax()) {
+            // トランザクション開始
+            DB::beginTransaction();
+            try {
+                // productsテーブルから指定のIDのレコード1件を取得
+                $product = Product::find($id);
+                // レコードを削除
+                $product->delete();
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollback();
+                return response()->json(['message' => '削除に失敗しました。'], 500);
+            }
+    
+            // 削除が成功したことを返す
+            return response()->json(['message' => '削除が完了しました。']);
+        } else {
             return back();
         }
-        // 削除したら一覧画面にリダイレクト
-        return redirect(route('searchlist'));
     }
     
   

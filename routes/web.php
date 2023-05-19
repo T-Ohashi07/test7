@@ -24,7 +24,7 @@ Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
 
 //一覧表示用
-Route::get('/productlist', 'ProductController@showList')->name('productlist');
+Route::get('/list', 'ProductController@list')->name('product.list');
 Route::get('/productlist', 'ProductController@searchList')->name('searchlist');
 //商品新規登録
 Route::get('/regist', 'CompanyController@showRegist')->name('regist');
@@ -35,4 +35,4 @@ Route::get('/detail/{id}', 'ProductController@showDetail')->name('detail');
 Route::get('/edit/{id}', 'ProductController@edit')->name('edit');
 Route::put('/edit/update/{id}', 'ProductController@update')->name('update');
 //削除処理
-Route::post('/destroy{id}', 'ProductController@destroy')->name('destroy');
+Route::post('/destroy/{id}', 'ProductController@destroy')->name('destroy');
